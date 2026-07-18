@@ -1,0 +1,5 @@
+# Build-Artefakt (wird aus den Quelldateien gebaut, siehe AGENTS.md)
+*.xpi
+
+# OS-Kram
+.DS_Store

@@ -1,0 +1,34 @@
+{
+  "manifest_version": 2,
+  "name": "Mail als Markdown kopieren",
+  "version": "0.1.4",
+  "description": "Kopiert die aktuell angezeigte E-Mail (Text oder HTML) als Markdown ins Clipboard.",
+  "author": "Michael Ranner (azedo.at)",
+  "applications": {
+    "gecko": {
+      "id": "mail-as-markdown@azedo.at",
+      "strict_min_version": "102.0"
+    }
+  },
+  "permissions": [
+    "messagesRead",
+    "clipboardWrite",
+    "menus"
+  ],
+  "background": {
+    "scripts": ["turndown.js", "turndown-plugin-gfm.js", "html2md.js", "background.js"]
+  },
+  "icons": {
+    "16": "icon-16.png",
+    "32": "icon-32.png",
+    "48": "icon-48.png",
+    "64": "icon-64.png"
+  },
+  "browser_action": {
+    "default_title": "Mail als Markdown kopieren",
+    "default_icon": {
+      "16": "icon-16.png",
+      "32": "icon-32.png"
+    }
+  }
+}
