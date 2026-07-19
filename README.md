@@ -61,6 +61,7 @@ stick with the temporary installation, which doesn't require a signature.
 - `html2md.js` — wrapper around Turndown for HTML→Markdown conversion
 - `turndown.js`, `turndown-plugin-gfm.js` — bundled libraries (HTML→Markdown incl. tables)
 - `_locales/en/`, `_locales/de/` — UI translations (English default, German)
+- `CHANGELOG.md` — version history
 
 ## License
 
