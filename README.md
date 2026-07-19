@@ -1,53 +1,72 @@
-# Mail als Markdown kopieren (Thunderbird-Extension)
+# Copy Mail as Markdown (Thunderbird extension)
 
-Kopiert die aktuell angezeigte oder in der Liste ausgewählte E-Mail (Text oder HTML)
-als Markdown ins Clipboard — praktisch, um eine Mail direkt in Claude Code einzufügen.
+Copies the currently displayed or list-selected email (text or HTML) as
+Markdown to the clipboard — handy for pasting a mail straight into Claude
+Code.
 
-## Nutzung
+## Usage
 
-- **Toolbar-Button**: kopiert die gerade im Lesefenster angezeigte Nachricht.
-- **Rechtsklick auf eine Mail in der Liste** → „Als Markdown kopieren".
+- **Toolbar button**: copies the message currently shown in the reading pane.
+- **Right-click a mail in the list** → "Copy as Markdown".
 
-Ein grüner Haken im Icon-Badge bestätigt den Kopiervorgang, ein rotes „!" zeigt einen
-Fehler an (z. B. wenn keine Nachricht ausgewählt ist).
+A green checkmark on the icon badge confirms the copy, a red "!" indicates an
+error (e.g. no message selected).
 
-Das Ergebnis enthält einen kurzen Kopf (Betreff/Von/An/Datum) gefolgt vom Mailtext
-als Markdown.
+The result contains a short header (Subject/From/To/Date) followed by the
+mail body as Markdown.
 
-## Installation (temporär, zum Testen)
+## Localization
 
-1. Thunderbird öffnen → Menü → „Add-ons und Themes" (`Strg+Shift+A`)
-2. Zahnrad-Icon → „Add-on debuggen"
-3. „Temporäres Add-on laden…" → die Datei `manifest.json` aus diesem Ordner auswählen
+The extension UI (name, description, toolbar tooltip, context menu entry,
+header labels) is localized via the standard WebExtension `_locales`
+mechanism. Thunderbird picks the locale automatically based on its own UI
+language — no user setting needed.
 
-Die Extension bleibt bis zum Neustart von Thunderbird aktiv.
+- `_locales/en/messages.json` — English (default/fallback)
+- `_locales/de/messages.json` — German
 
-## Installation (dauerhaft)
+To add another language, add `_locales/<lang>/messages.json` with the same
+keys.
 
-Thunderbird verlangt für dauerhafte Installation eine signierte `.xpi`. Für den reinen
-Eigengebrauch reicht es, den Ordner als ZIP zu packen und in `.xpi` umzubenennen:
+## Installation (temporary, for testing)
+
+1. Open Thunderbird → menu → "Add-ons and Themes" (`Ctrl+Shift+A`)
+2. Gear icon → "Debug Add-ons"
+3. "Load Temporary Add-on…" → select the `manifest.json` file in this folder
+
+The extension stays active until Thunderbird is restarted.
+
+## Installation (permanent)
+
+Thunderbird requires a signed `.xpi` for permanent installation. For personal
+use it's enough to zip the folder and rename it to `.xpi`:
 
 ```bash
-cd thunderbird-md-copy
-zip -r -x .git/\* -x README.md -X ../mail-as-markdown.xpi manifest.json background.js html2md.js turndown.js turndown-plugin-gfm.js
+cd mail-as-markdown
+zip -r -X ../mail-as-markdown.xpi \
+  manifest.json background.js html2md.js turndown.js turndown-plugin-gfm.js \
+  LICENSE icon-16.png icon-32.png icon-48.png icon-64.png _locales
 ```
 
-Die entstandene `mail-as-markdown.xpi` per Drag & Drop in den Add-ons-Manager ziehen.
-Da sie nicht von Mozilla signiert ist, ist dafür in normalen Thunderbird-Releases die
-Einstellung `xpinstall.signatures.required = false` (about:config) oder die Nutzung von
-Thunderbird ESR/Developer-Edition nötig — alternativ bei der temporären Installation
-bleiben, die keine Signatur verlangt.
+Drag and drop the resulting `mail-as-markdown.xpi` onto the Add-ons Manager.
+Since it isn't signed by Mozilla, this requires either the
+`xpinstall.signatures.required = false` setting (about:config) on a normal
+Thunderbird release, or using Thunderbird ESR/Developer Edition — or just
+stick with the temporary installation, which doesn't require a signature.
 
-## Dateien
+## Files
 
-- `manifest.json` — Extension-Manifest (MailExtension, Manifest V2)
-- `background.js` — Logik: Nachricht holen, HTML→Markdown wandeln, ins Clipboard kopieren
-- `html2md.js` — Wrapper um Turndown zur HTML→Markdown-Konvertierung
-- `turndown.js`, `turndown-plugin-gfm.js` — gebündelte Bibliotheken (HTML→Markdown inkl. Tabellen)
+- `manifest.json` — extension manifest (MailExtension, Manifest V2)
+- `background.js` — logic: fetch message, convert HTML→Markdown, copy to clipboard
+- `html2md.js` — wrapper around Turndown for HTML→Markdown conversion
+- `turndown.js`, `turndown-plugin-gfm.js` — bundled libraries (HTML→Markdown incl. tables)
+- `_locales/en/`, `_locales/de/` — UI translations (English default, German)
 
-## Lizenz
+## License
 
-Eigener Code: BSD 2-Clause License, siehe `LICENSE` (Copyright (c) 2026, Michael Ranner / azedo.at).
+Own code: BSD 2-Clause License, see `LICENSE` (Copyright (c) 2026, Michael
+Ranner / azedo.at).
 
-Gebündelte Drittbibliotheken `turndown.js` und `turndown-plugin-gfm.js` stehen unter
-der MIT-Lizenz der jeweiligen Original-Autoren (Lizenztext jeweils im Dateikopf).
+Bundled third-party libraries `turndown.js` and `turndown-plugin-gfm.js` are
+under the MIT license of their respective original authors (license text in
+each file's header).

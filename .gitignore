@@ -1,5 +1,5 @@
-# Build-Artefakt (wird aus den Quelldateien gebaut, siehe AGENTS.md)
+# Build artifact (generated from source files, see AGENTS.md)
 *.xpi
 
-# OS-Kram
+# OS cruft
 .DS_Store

@@ -1,4 +1,4 @@
-// Sucht rekursiv nach text/html- und text/plain-Teilen im MIME-Baum einer Nachricht.
+// Recursively searches the message's MIME tree for text/html and text/plain parts.
 function findBodyParts(part, result) {
   if (!part) return;
   const contentType = (part.contentType || "").toLowerCase();
@@ -29,20 +29,23 @@ async function buildMarkdown(message) {
   } else if (result.text) {
     body = result.text.trim();
   } else {
-    body = "*(kein Textinhalt gefunden)*";
+    body = messenger.i18n.getMessage("noTextContent");
   }
 
   const meta =
-    headerLine("Betreff", message.subject) +
-    headerLine("Von", message.author) +
-    headerLine("An", (message.recipients || []).join(", ")) +
-    headerLine("Datum", message.date ? new Date(message.date).toLocaleString("de-DE") : "");
+    headerLine(messenger.i18n.getMessage("headerSubject"), message.subject) +
+    headerLine(messenger.i18n.getMessage("headerFrom"), message.author) +
+    headerLine(messenger.i18n.getMessage("headerTo"), (message.recipients || []).join(", ")) +
+    headerLine(
+      messenger.i18n.getMessage("headerDate"),
+      message.date ? new Date(message.date).toLocaleString(messenger.i18n.getUILanguage()) : ""
+    );
 
   return `${meta}\n${body}\n`;
 }
 
-// document.execCommand("copy") funktioniert im (Hintergrund-)Extension-Fenster
-// zuverlässiger als die async Clipboard API, da Letztere Dokument-Fokus verlangt.
+// document.execCommand("copy") works more reliably in the (background) extension
+// window than the async Clipboard API, which requires document focus.
 function copyToClipboard(text) {
   const textarea = document.createElement("textarea");
   textarea.value = text;
@@ -69,30 +72,30 @@ async function copyMessage(message) {
     const ok = copyToClipboard(markdown);
     flashBadge(ok);
   } catch (err) {
-    console.error("Mail als Markdown: Fehler beim Kopieren", err);
+    console.error("Copy Mail as Markdown: error while copying", err);
     flashBadge(false);
   }
 }
 
-// Toolbar-Button: kopiert die aktuell angezeigte Nachricht.
+// Toolbar button: copies the currently displayed message.
 browser.browserAction.onClicked.addListener(async (tab) => {
   const message = await messenger.messageDisplay.getDisplayedMessage(tab.id);
   await copyMessage(message);
 });
 
-// Kontextmenü in der Nachrichtenliste.
-// Hinweis: menus.create() ist synchron und meldet Fehler nur über den
-// optionalen Callback + browser.runtime.lastError, nicht als Promise.
+// Context menu in the message list.
+// Note: menus.create() is synchronous and only reports errors via the
+// optional callback + browser.runtime.lastError, not as a Promise.
 browser.menus.create(
   {
     id: "copy-as-markdown",
-    title: "Als Markdown kopieren",
+    title: messenger.i18n.getMessage("menuItemTitle"),
     contexts: ["message_list"],
     icons: { "16": "icon-16.png", "32": "icon-32.png" },
   },
   () => {
     if (browser.runtime.lastError) {
-      console.error("Mail als Markdown: Fehler bei menus.create", browser.runtime.lastError);
+      console.error("Copy Mail as Markdown: error in menus.create", browser.runtime.lastError);
     }
   }
 );

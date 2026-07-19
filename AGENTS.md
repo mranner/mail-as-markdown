@@ -1,77 +1,98 @@
-# Anleitung für Agents (z. B. Claude Code)
+# Instructions for agents (e.g. Claude Code)
 
-Dieses Repo enthält eine Thunderbird-MailExtension (Manifest V2), die eine E-Mail
-als Markdown ins Clipboard kopiert. Diese Datei beschreibt, wie ein Agent das
-`.xpi`-Paket baut und bei der lokalen Installation unterstützt.
+This repo contains a Thunderbird MailExtension (Manifest V2) that copies an
+email as Markdown to the clipboard. This file describes how an agent builds
+the `.xpi` package and helps with local installation.
 
-## Projektstruktur
+## Project structure
 
-- `manifest.json` — Extension-Manifest
-- `background.js` — Kernlogik (Nachricht lesen, HTML→Markdown, Clipboard)
-- `html2md.js` — Turndown-Wrapper
-- `turndown.js`, `turndown-plugin-gfm.js` — gebündelte Drittbibliotheken (MIT-lizenziert)
-- `icon-16.png` / `icon-32.png` / `icon-48.png` / `icon-64.png` — Toolbar-/Menü-Icon
-- `LICENSE` — BSD-2-Clause für den eigenen Code
+- `manifest.json` — extension manifest
+- `background.js` — core logic (read message, HTML→Markdown, clipboard)
+- `html2md.js` — Turndown wrapper
+- `turndown.js`, `turndown-plugin-gfm.js` — bundled third-party libraries (MIT licensed)
+- `icon-16.png` / `icon-32.png` / `icon-48.png` / `icon-64.png` — toolbar/menu icon
+- `_locales/en/messages.json`, `_locales/de/messages.json` — UI translations (English default, German)
+- `LICENSE` — BSD-2-Clause for the own code
 
-## .xpi bauen
+## Localization
 
-Ein `.xpi` ist ein einfaches ZIP mit den Extension-Dateien im Root (kein
-Unterordner). Aus dem Repo-Root:
+All user-facing strings (extension name/description, toolbar tooltip, context
+menu entry, Markdown header labels) go through the WebExtension i18n API —
+`messenger.i18n.getMessage("key")` in code, `__MSG_key__` placeholders in
+`manifest.json`. `default_locale` in `manifest.json` is `en`; Thunderbird
+picks the matching `_locales/<lang>/messages.json` automatically based on its
+own UI language, falling back to `en` if no match exists.
+
+When adding a new user-facing string:
+
+1. Add the key to `_locales/en/messages.json` (with a `description` field).
+2. Add the same key to `_locales/de/messages.json` (and any other locale
+   present).
+3. Reference it via `messenger.i18n.getMessage("key")` in `background.js`, or
+   `__MSG_key__` in `manifest.json`.
+
+Never hardcode a language-specific string directly in `background.js` or
+`manifest.json`.
+
+## Building the .xpi
+
+A `.xpi` is a plain ZIP with the extension files at the root (no
+subfolder). From the repo root:
 
 ```bash
-cd thunderbird-md-copy
+cd mail-as-markdown
 rm -f ../mail-as-markdown.xpi
 zip -r -X ../mail-as-markdown.xpi \
   manifest.json background.js html2md.js turndown.js turndown-plugin-gfm.js \
-  LICENSE icon-16.png icon-32.png icon-48.png icon-64.png
+  LICENSE icon-16.png icon-32.png icon-48.png icon-64.png _locales
 ```
 
-Bei jeder Code-Änderung die `version` in `manifest.json` erhöhen — Thunderbird
-übernimmt ein neu installiertes `.xpi` sonst nicht zuverlässig, selbst wenn der
-Inhalt sich geändert hat (Update wird nur bei höherer Versionsnummer erkannt).
+Bump `version` in `manifest.json` on every code change — Thunderbird doesn't
+reliably pick up a newly installed `.xpi` otherwise, even if the content
+changed (an update is only recognized with a higher version number).
 
-## Lokale Installation (temporär, ohne Signatur-Anpassung)
+## Local installation (temporary, no signature change needed)
 
-Am einfachsten für Tests, keine Konfigurationsänderung nötig, aber nicht
-dauerhaft (verschwindet beim Thunderbird-Neustart):
+Simplest for testing, no configuration change required, but not permanent
+(disappears on Thunderbird restart):
 
-1. Thunderbird → `Strg+Shift+A` (Add-ons und Themes)
-2. Zahnrad-Icon → „Add-on debuggen“
-3. „Temporäres Add-on laden…“ → `manifest.json` auswählen
+1. Thunderbird → `Ctrl+Shift+A` (Add-ons and Themes)
+2. Gear icon → "Debug Add-ons"
+3. "Load Temporary Add-on…" → select `manifest.json`
 
-## Lokale Installation (dauerhaft, unsigniertes .xpi)
+## Local installation (permanent, unsigned .xpi)
 
-Reguläre Thunderbird-Releases installieren nur signierte Add-ons dauerhaft.
-Für ein selbstgebautes, unsigniertes `.xpi` muss die Signaturprüfung temporär
-deaktiviert werden — funktioniert nur auf **Thunderbird ESR** oder der
-**Developer Edition**, nicht auf dem normalen Release-Kanal.
+Regular Thunderbird releases only install signed add-ons permanently. For a
+self-built, unsigned `.xpi`, signature verification must be temporarily
+disabled — this only works on **Thunderbird ESR** or the **Developer
+Edition**, not on the normal release channel.
 
-1. Thunderbird **vollständig schließen** (Prozess darf nicht mehr laufen —
-   `prefs.js` wird beim Beenden neu geschrieben und überschreibt sonst jede
-   manuelle Änderung)
-2. In der `prefs.js` des aktiven Profils folgende Zeile ergänzen:
+1. **Fully quit Thunderbird** (the process must not still be running —
+   `prefs.js` is rewritten on exit and would otherwise overwrite any manual
+   change)
+2. Add the following line to the `prefs.js` of the active profile:
    ```
    user_pref("xpinstall.signatures.required", false);
    ```
-   Profilpfad macOS: `~/Library/Thunderbird/Profiles/<profil>.default/prefs.js`
-   (Profilnamen vorher prüfen, z. B. via `find ~/Library/Thunderbird/Profiles -maxdepth 1 -type d`)
-3. Vor dem Ändern ein Backup der `prefs.js` anlegen (`cp prefs.js prefs.js.bak`)
-4. Thunderbird starten → `Strg+Shift+A` → Zahnrad → „Add-on aus Datei
-   installieren…“ → das gebaute `.xpi` auswählen
-5. In `about:addons` prüfen, ob die erwartete Versionsnummer installiert ist
-6. **Nach der Installation**: Thunderbird wieder schließen und die Zeile aus
-   Schritt 2 entfernen bzw. auf `true` setzen, um die Signaturprüfung wieder
-   zu aktivieren (Sicherheitsrelevant — nicht dauerhaft deaktiviert lassen)
+   Profile path on macOS: `~/Library/Thunderbird/Profiles/<profile>.default/prefs.js`
+   (check the profile name first, e.g. via `find ~/Library/Thunderbird/Profiles -maxdepth 1 -type d`)
+3. Back up `prefs.js` before editing (`cp prefs.js prefs.js.bak`)
+4. Start Thunderbird → `Ctrl+Shift+A` → gear icon → "Install Add-on From
+   File…" → select the built `.xpi`
+5. Check in `about:addons` that the expected version number is installed
+6. **After installation**: quit Thunderbird again and remove the line from
+   step 2, or set it back to `true`, to re-enable signature verification
+   (security-relevant — don't leave it disabled permanently)
 
 ## Debugging
 
-- Add-ons-Manager → Zahnrad → „Add-on debuggen“ → bei der Extension auf
-  „Untersuchen“ klicken öffnet eine an das Background-Script gebundene
-  Devtools-Konsole. In der Praxis war die Konsolenausgabe dort teils
-  unzuverlässig sichtbar — als robusterer Kanal hat sich ein sichtbares
-  Badge auf dem Toolbar-Icon (`browser.browserAction.setBadgeText(...)`)
-  bewährt, um Erfolg/Fehler ohne Devtools zu erkennen.
-- `browser.menus.create()` ist in Thunderbird **synchron** und gibt **kein
-  Promise** zurück (anders als in manchen Doku-Beispielen suggeriert) —
-  Fehler nur über den optionalen Callback + `browser.runtime.lastError`
-  abfragen, kein `.then()`/`.catch()` verwenden.
+- Add-ons Manager → gear icon → "Debug Add-ons" → click "Inspect" on the
+  extension to open a devtools console bound to the background script. In
+  practice, console output there was sometimes unreliably visible — a visible
+  badge on the toolbar icon (`browser.browserAction.setBadgeText(...)`) has
+  proven to be a more robust channel for detecting success/failure without
+  devtools.
+- `browser.menus.create()` is **synchronous** in Thunderbird and does **not**
+  return a Promise (unlike what some documentation examples suggest) — check
+  errors only via the optional callback + `browser.runtime.lastError`, don't
+  use `.then()`/`.catch()`.

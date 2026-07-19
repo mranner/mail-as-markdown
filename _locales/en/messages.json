@@ -1,0 +1,38 @@
+{
+  "extensionName": {
+    "message": "Copy Mail as Markdown",
+    "description": "Extension name shown in the add-ons manager."
+  },
+  "extensionDescription": {
+    "message": "Copies the currently displayed email (text or HTML) as Markdown to the clipboard.",
+    "description": "Extension description shown in the add-ons manager."
+  },
+  "browserActionTitle": {
+    "message": "Copy mail as Markdown",
+    "description": "Tooltip on the toolbar button."
+  },
+  "menuItemTitle": {
+    "message": "Copy as Markdown",
+    "description": "Context menu entry in the message list."
+  },
+  "headerSubject": {
+    "message": "Subject",
+    "description": "Label for the subject line in the generated Markdown header."
+  },
+  "headerFrom": {
+    "message": "From",
+    "description": "Label for the sender in the generated Markdown header."
+  },
+  "headerTo": {
+    "message": "To",
+    "description": "Label for the recipients in the generated Markdown header."
+  },
+  "headerDate": {
+    "message": "Date",
+    "description": "Label for the date in the generated Markdown header."
+  },
+  "noTextContent": {
+    "message": "*(no text content found)*",
+    "description": "Placeholder body when a message has neither HTML nor plain text content."
+  }
+}
