@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.1] - 2026-08-14
+
+### Changed
+
+- The build now writes the packaged `.xpi` to a `dist/` directory inside the
+  repo instead of the parent directory. `dist/` is git-ignored; `README.md`
+  and `AGENTS.md` document the new build path.
+
 ## [0.2.0] - 2026-07-19
 
 ### Added

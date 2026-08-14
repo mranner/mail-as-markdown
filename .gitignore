@@ -1,4 +1,5 @@
-# Build artifact (generated from source files, see AGENTS.md)
+# Build output (generated from source files, see AGENTS.md)
+dist/
 *.xpi
 
 # OS cruft

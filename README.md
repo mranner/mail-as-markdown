@@ -43,12 +43,13 @@ use it's enough to zip the folder and rename it to `.xpi`:
 
 ```bash
 cd mail-as-markdown
-zip -r -X ../mail-as-markdown.xpi \
+mkdir -p dist
+zip -r -X dist/mail-as-markdown.xpi \
   manifest.json background.js html2md.js turndown.js turndown-plugin-gfm.js \
   LICENSE icon-16.png icon-32.png icon-48.png icon-64.png _locales
 ```
 
-Drag and drop the resulting `mail-as-markdown.xpi` onto the Add-ons Manager.
+Drag and drop the resulting `dist/mail-as-markdown.xpi` onto the Add-ons Manager.
 Since it isn't signed by Mozilla, this requires either the
 `xpinstall.signatures.required = false` setting (about:config) on a normal
 Thunderbird release, or using Thunderbird ESR/Developer Edition — or just
@@ -61,6 +62,7 @@ stick with the temporary installation, which doesn't require a signature.
 - `html2md.js` — wrapper around Turndown for HTML→Markdown conversion
 - `turndown.js`, `turndown-plugin-gfm.js` — bundled libraries (HTML→Markdown incl. tables)
 - `_locales/en/`, `_locales/de/` — UI translations (English default, German)
+- `dist/` — build output, holds the packaged `.xpi` (not in version control)
 - `CHANGELOG.md` — version history
 
 ## License

@@ -13,6 +13,8 @@ the `.xpi` package and helps with local installation.
 - `icon-16.png` / `icon-32.png` / `icon-48.png` / `icon-64.png` — toolbar/menu icon
 - `_locales/en/messages.json`, `_locales/de/messages.json` — UI translations (English default, German)
 - `LICENSE` — BSD-2-Clause for the own code
+- `dist/` — build output, holds the packaged `.xpi` (git-ignored, created by
+  the build)
 
 ## Localization
 
@@ -37,12 +39,13 @@ Never hardcode a language-specific string directly in `background.js` or
 ## Building the .xpi
 
 A `.xpi` is a plain ZIP with the extension files at the root (no
-subfolder). From the repo root:
+subfolder). The build output goes to `dist/` inside the repo — never next to
+the repo or into the repo root. `dist/` is git-ignored. From the repo root:
 
 ```bash
-cd mail-as-markdown
-rm -f ../mail-as-markdown.xpi
-zip -r -X ../mail-as-markdown.xpi \
+mkdir -p dist
+rm -f dist/mail-as-markdown.xpi
+zip -r -X dist/mail-as-markdown.xpi \
   manifest.json background.js html2md.js turndown.js turndown-plugin-gfm.js \
   LICENSE icon-16.png icon-32.png icon-48.png icon-64.png _locales
 ```
@@ -78,7 +81,7 @@ Edition**, not on the normal release channel.
    (check the profile name first, e.g. via `find ~/Library/Thunderbird/Profiles -maxdepth 1 -type d`)
 3. Back up `prefs.js` before editing (`cp prefs.js prefs.js.bak`)
 4. Start Thunderbird → `Ctrl+Shift+A` → gear icon → "Install Add-on From
-   File…" → select the built `.xpi`
+   File…" → select the built `dist/mail-as-markdown.xpi`
 5. Check in `about:addons` that the expected version number is installed
 6. **After installation**: quit Thunderbird again and remove the line from
    step 2, or set it back to `true`, to re-enable signature verification
