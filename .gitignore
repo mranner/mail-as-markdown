@@ -2,5 +2,8 @@
 dist/
 *.xpi
 
+# Scratch files (mail drafts, one-off working files)
+.tmp/
+
 # OS cruft
 .DS_Store
