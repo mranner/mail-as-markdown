@@ -24,7 +24,7 @@ function collectParts(part, out) {
     out.cidNames.set(contentId.trim().replace(/^<|>$/g, "").toLowerCase(), part.name);
   }
   if (contentId && part.partName) {
-    out.inlineParts.add(part.partName);
+    out.inlineParts.set(part.partName, contentId.trim().replace(/^<|>$/g, ""));
   }
   if (part.parts) {
     for (const child of part.parts) {
@@ -81,8 +81,11 @@ async function buildAttachmentList(messageId, inlineParts) {
   const inlineLabel = messenger.i18n.getMessage("attachmentInline");
   const lines = attachments.map((attachment) => {
     const details = [attachment.contentType, formatSize(attachment.size)].filter(Boolean).join(", ");
-    const suffix = inlineParts.has(attachment.partName) ? ` (${inlineLabel})` : "";
-    return `- \`${attachment.name}\`${details ? ` — ${details}` : ""}${suffix}`;
+    // Outlook names every inline image "image.png", so the Content-ID is the
+    // only way to tell which list entry belongs to which marker in the body.
+    const contentId = inlineParts.get(attachment.partName);
+    const suffix = contentId ? ` (${inlineLabel}, cid:${contentId})` : "";
+    return `- \`${baseName(attachment.name)}\`${details ? ` — ${details}` : ""}${suffix}`;
   });
 
   const heading = messenger.i18n.getMessage("attachmentsHeading");
@@ -93,7 +96,7 @@ async function buildMarkdown(message) {
   const full = await messenger.messages.getFull(message.id);
   const result = { html: null, text: null };
   findBodyParts(full, result);
-  const parts = collectParts(full, { cidNames: new Map(), inlineParts: new Set() });
+  const parts = collectParts(full, { cidNames: new Map(), inlineParts: new Map() });
 
   let body;
   if (result.html) {

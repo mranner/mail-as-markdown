@@ -4,6 +4,28 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.5.0] - 2026-08-18
+
+### Changed
+
+- Links whose visible text equals their target are written as autolinks
+  (`<https://example.com/>`, `<user@example.com>`) instead of repeating the URL
+  twice. This also drops the Markdown escaping that made the visible half read
+  `nmb\_anmeldung`. Emphasis inside such a link text is lost — links whose text
+  differs from the target are untouched.
+- Attachment and image file names lose a directory prefix carried in the MIME
+  part name (`img/logo.JPG` becomes `logo.JPG`).
+- Inline attachments now show their Content-ID. Outlook names every inline
+  image `image.png`, so without it a list entry could not be matched to the
+  marker in the body.
+
+### Fixed
+
+- Paragraphs consisting only of invisible characters (`&nbsp;`, zero-width
+  space, BOM, word joiner) are dropped, and runs of blank lines collapse into
+  one. Outlook mails were half empty lines. The characters are only removed
+  where a line holds nothing else, so `20 %` keeps its non-breaking space.
+
 ## [0.4.1] - 2026-08-18
 
 ### Fixed

@@ -8,6 +8,32 @@ function formatSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+// MIME part names sometimes carry a directory prefix ("img/logo.JPG"); only the
+// file name is of interest.
+function baseName(name) {
+  return (name || "").replace(/^.*[\\/]/, "");
+}
+
+// Mail HTML is full of &nbsp;/zero-width spacer paragraphs. Stripping those
+// characters everywhere would glue words together, so they are only removed
+// where a line consists of nothing else — and runs of such lines collapse into
+// one. Quote markers are kept so blockquote structure survives.
+var INVISIBLE = /[\u00A0\u180E\u200B-\u200D\u2060\uFEFF]/g;
+
+function dropInvisibleParagraphs(markdown) {
+  var isEmptyish = function (line) {
+    return /^[\s>]*$/.test(line);
+  };
+  var out = [];
+  markdown.split("\n").forEach(function (line) {
+    var stripped = line.replace(INVISIBLE, "");
+    var cleaned = isEmptyish(stripped) ? stripped.replace(/[^>]/g, "") : line;
+    if (isEmptyish(cleaned) && out.length && isEmptyish(out[out.length - 1])) return;
+    out.push(cleaned);
+  });
+  return out.join("\n");
+}
+
 // Collapses whitespace the way Turndown's own cleanAttribute() does.
 function cleanText(value) {
   return (value || "").replace(/\s+/g, " ").trim();
@@ -41,7 +67,7 @@ function isTrackingPixel(node, src) {
 // Best-effort file name for the image, so the marker says more than "Image".
 function fileNameFromSrc(src, cidNames) {
   if (/^cid:/i.test(src)) {
-    return cidNames ? cidNames.get(src.slice(4).replace(/^<|>$/g, "").toLowerCase()) || "" : "";
+    return cidNames ? baseName(cidNames.get(src.slice(4).replace(/^<|>$/g, "").toLowerCase())) : "";
   }
   if (!/^https?:/i.test(src)) return "";
   let path = src.split(/[?#]/)[0];
@@ -93,6 +119,24 @@ function imageRule(cidNames) {
   };
 }
 
+// "[https://x/](https://x/)" and "[a@b.c](mailto:a@b.c)" say everything twice
+// and drag Markdown escaping through the visible half. The autolink form says
+// it once — at the cost of any emphasis inside the link text.
+function autolinkRule() {
+  return {
+    filter: function (node) {
+      if (node.nodeName !== "A") return false;
+      var href = (node.getAttribute("href") || "").trim();
+      var text = cleanText(node.textContent);
+      if (!href || !text || /[<>\s]/.test(href)) return false;
+      return href === text || href.toLowerCase() === "mailto:" + text.toLowerCase();
+    },
+    replacement: function (content, node) {
+      return "<" + cleanText(node.textContent) + ">";
+    },
+  };
+}
+
 // Newsletters build their layout from nested tables. The GFM plugin keeps every
 // table without a heading row as raw HTML (turndown-plugin-gfm.js:131 via
 // keepReplacement), which buries the actual text in markup and hides the images
@@ -126,6 +170,7 @@ function htmlToMarkdown(html, options = {}) {
   // addRule() prepends, so these win over Turndown's built-in and the GFM
   // plugin's rules — and over the plugin's keep() for heading-less tables.
   turndownService.addRule("image", imageRule(options.cidNames));
+  turndownService.addRule("autolink", autolinkRule());
   turndownService.addRule("layoutTable", unwrapRule(function (node) {
     return node.nodeName === "TABLE" && isLayoutTable(node);
   }));
@@ -135,5 +180,5 @@ function htmlToMarkdown(html, options = {}) {
   turndownService.addRule("layoutCell", unwrapRule(function (node) {
     return (node.nodeName === "TD" || node.nodeName === "TH") && isLayoutTable(node.closest("table"));
   }));
-  return turndownService.turndown(html).trim();
+  return dropInvisibleParagraphs(turndownService.turndown(html)).trim();
 }
