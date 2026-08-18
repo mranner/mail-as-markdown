@@ -65,10 +65,8 @@ Simplest for testing, no configuration change required, but not permanent
 
 ## Local installation (permanent, unsigned .xpi)
 
-Regular Thunderbird releases only install signed add-ons permanently. For a
-self-built, unsigned `.xpi`, signature verification must be temporarily
-disabled — this only works on **Thunderbird ESR** or the **Developer
-Edition**, not on the normal release channel.
+A self-built `.xpi` is unsigned, so signature verification has to be turned
+off temporarily. This works on **Thunderbird ESR**, which is what we run.
 
 Set the pref in Thunderbird itself — do **not** edit `prefs.js` on disk.
 Thunderbird rewrites that file on exit and would overwrite a manual change.
