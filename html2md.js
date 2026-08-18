@@ -137,21 +137,74 @@ function autolinkRule() {
   };
 }
 
-// Newsletters build their layout from nested tables. The GFM plugin keeps every
-// table without a heading row as raw HTML (turndown-plugin-gfm.js:131 via
-// keepReplacement), which buries the actual text in markup and hides the images
-// from the rule above. Such tables get unwrapped instead; real data tables (with
-// a <th>) still go through the plugin and become Markdown tables.
-function isLayoutTable(table) {
-  return !!table && !table.querySelector("th");
+// Mail HTML uses <table> for two unrelated jobs, and they need opposite
+// treatment. Outlook writes real data tables with bold <td> instead of <th>, so
+// the presence of a <th> cannot decide it — a nested table means layout, and a
+// grid of at least two rows and two columns means data.
+function tableKind(table) {
+  if (!table) return "none";
+  if (table.querySelector("table")) return "layout";
+  if (table.querySelector("th")) return "gfm";
+  const rows = table.rows ? Array.prototype.slice.call(table.rows) : [];
+  const columns = rows.reduce((widest, row) => Math.max(widest, row.cells.length), 0);
+  return rows.length >= 2 && columns >= 2 ? "data" : "layout";
 }
 
+function kindOf(node) {
+  return tableKind(node.nodeName === "TABLE" ? node : node.closest("table"));
+}
+
+// Layout tables are unwrapped: the GFM plugin would keep them verbatim as HTML
+// (turndown-plugin-gfm.js:131 via keepReplacement), burying the text in markup.
 // Mirrors Turndown's defaultRule, i.e. renders the element as if it had no rule.
 function unwrapRule(filter) {
   return {
     filter: filter,
     replacement: function (content, node) {
       return node.isBlock ? "\n\n" + content + "\n\n" : content;
+    },
+  };
+}
+
+// Data tables without a <th> are what the GFM plugin refuses to convert, so
+// they are rendered here, treating the first row as the header. Same output
+// shape as the plugin's own table rules.
+function dataCellRule() {
+  return {
+    filter: function (node) {
+      return (node.nodeName === "TD" || node.nodeName === "TH") && kindOf(node) === "data";
+    },
+    replacement: function (content, node) {
+      const index = Array.prototype.indexOf.call(node.parentNode.cells, node);
+      const text = content.replace(/\r?\n/g, " ").replace(/\|/g, "\\|").trim();
+      return (index === 0 ? "| " : " ") + text + " |";
+    },
+  };
+}
+
+function dataRowRule() {
+  return {
+    filter: function (node) {
+      return node.nodeName === "TR" && kindOf(node) === "data";
+    },
+    replacement: function (content, node) {
+      const table = node.closest("table");
+      let border = "";
+      if (table && table.rows[0] === node) {
+        for (let i = 0; i < node.cells.length; i++) border += (i === 0 ? "| " : " ") + "---" + " |";
+      }
+      return "\n" + content + (border ? "\n" + border : "");
+    },
+  };
+}
+
+function dataTableRule() {
+  return {
+    filter: function (node) {
+      return node.nodeName === "TABLE" && tableKind(node) === "data";
+    },
+    replacement: function (content) {
+      return "\n\n" + content.replace("\n\n", "\n") + "\n\n";
     },
   };
 }
@@ -172,13 +225,16 @@ function htmlToMarkdown(html, options = {}) {
   turndownService.addRule("image", imageRule(options.cidNames));
   turndownService.addRule("autolink", autolinkRule());
   turndownService.addRule("layoutTable", unwrapRule(function (node) {
-    return node.nodeName === "TABLE" && isLayoutTable(node);
+    return node.nodeName === "TABLE" && tableKind(node) === "layout";
   }));
   turndownService.addRule("layoutRow", unwrapRule(function (node) {
-    return node.nodeName === "TR" && isLayoutTable(node.closest("table"));
+    return node.nodeName === "TR" && kindOf(node) === "layout";
   }));
   turndownService.addRule("layoutCell", unwrapRule(function (node) {
-    return (node.nodeName === "TD" || node.nodeName === "TH") && isLayoutTable(node.closest("table"));
+    return (node.nodeName === "TD" || node.nodeName === "TH") && kindOf(node) === "layout";
   }));
+  turndownService.addRule("dataTable", dataTableRule());
+  turndownService.addRule("dataRow", dataRowRule());
+  turndownService.addRule("dataCell", dataCellRule());
   return dropInvisibleParagraphs(turndownService.turndown(html)).trim();
 }

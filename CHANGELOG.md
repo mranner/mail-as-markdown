@@ -4,6 +4,18 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.5.2] - 2026-08-18
+
+### Fixed
+
+- Data tables written by Outlook came out as a flat list of cells, one per
+  line. Outlook marks header cells as bold `<td>` rather than `<th>`, and the
+  layout-table detection added in 0.4.1 treated any table without a `<th>` as
+  layout and unwrapped it. A table is now judged by its shape: a nested table
+  means layout, a grid of at least two rows and two columns means data. Data
+  tables without a `<th>` are rendered as Markdown tables here, taking the
+  first row as the header — the GFM plugin only converts tables that have one.
+
 ## [0.5.1] - 2026-08-18
 
 ### Changed
