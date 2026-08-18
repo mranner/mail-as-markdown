@@ -64,7 +64,7 @@
     "description": "Marks an attachment that is referenced from the body as an inline image."
   },
   "headerDeliveredTo": {
-    "message": "Zugestellt an",
-    "description": "Label for the delivering mailbox/host in the generated Markdown header."
+    "message": "Ursprünglich zugestellt an",
+    "description": "Label for the mailbox a message was delivered to. Read from the message headers, this is where it arrived — not necessarily the account it is filed in now."
   }
 }

@@ -16,9 +16,15 @@ The result contains a short header followed by the mail body as Markdown:
 
 - **Header**: Subject, From, To, Date, plus a source reference so the mail can
   be looked up again later, e.g. over IMAP: `Folder` (account name and folder
-  path), `Delivered to` (the delivering mailbox and host, taken from the
-  message's own headers — more reliable than the account label for telling
-  accounts apart), and the `Message-ID`.
+  path), `Originally delivered to` (the mailbox a message
+  arrived in, taken from its own headers), and the `Message-ID`.
+
+  Note what the two location lines do and do not say: `Folder` is the
+  Thunderbird account label, which is user-chosen and need not resemble the
+  server name. `Originally delivered to` names a real mailbox and host, but
+  records the delivery — file or move a message and it no longer matches where
+  the message is stored. Neither is a reliable pointer to the current location;
+  the `Message-ID` is what identifies the message itself.
 - **Images**: kept as Markdown image syntax, but the alt text is enriched with
   the file name — `![Image: Company logo — logo.png](cid:…)`. Inline images
   resolve their name via Content-ID, remote ones via the URL. Data URIs are

@@ -4,6 +4,18 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.5.1] - 2026-08-18
+
+### Changed
+
+- The `Delivered to` line is now labelled `Originally delivered to`. The header
+  it comes from records where a message arrived, which stops being the account
+  it lives in as soon as the message is filed or moved — a mail delivered to
+  one server and filed into a shared folder on another named the wrong account.
+  Where a message is stored is only known to Thunderbird itself
+  (`folder.server.hostName`), which the regular WebExtension API does not
+  expose, so the line is relabelled rather than corrected.
+
 ## [0.5.0] - 2026-08-18
 
 ### Changed
