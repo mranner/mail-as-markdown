@@ -4,6 +4,31 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] - 2026-08-18
+
+### Added
+
+- Images in the body now carry a hint instead of a bare link: the alt text is
+  enriched with the file name (resolved via Content-ID for inline images, or
+  taken from the URL for remote ones), e.g.
+  `![Image: Company logo — logo.png](cid:…)`.
+- Attachments are listed below the mail body (name, content type, size).
+  Inline images referenced from the body are marked as such. The files
+  themselves are not copied — the clipboard holds plain text.
+- The Markdown header gained a source reference (`Folder`, `Message-ID`) so
+  the message can be looked up again later, e.g. over IMAP.
+
+### Changed
+
+- Data URI images (`src="data:image/png;base64,…"`) are no longer copied
+  verbatim. The base64 payload carries no context but easily hundreds of
+  kilobytes, so it is replaced by a plain-text marker with content type and
+  estimated size.
+- Tracking pixels and spacer images (width/height ≤ 1px, `spacer.gif`-style
+  names) are dropped instead of producing a marker line each.
+- New manifest permission `accountsRead`, needed to show the account name in
+  the folder reference instead of Thunderbird's internal account id.
+
 ## [0.2.1] - 2026-08-14
 
 ### Changed

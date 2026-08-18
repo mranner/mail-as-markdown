@@ -34,5 +34,33 @@
   "noTextContent": {
     "message": "*(kein Textinhalt gefunden)*",
     "description": "Placeholder body when a message has neither HTML nor plain text content."
+  },
+  "headerFolder": {
+    "message": "Ordner",
+    "description": "Label for the source folder reference in the generated Markdown header."
+  },
+  "headerMessageId": {
+    "message": "Message-ID",
+    "description": "Label for the RFC 5322 Message-ID in the generated Markdown header."
+  },
+  "imageLabel": {
+    "message": "Bild",
+    "description": "Prefix marking an image placeholder in the converted body."
+  },
+  "imageNoDescription": {
+    "message": "ohne Beschreibung",
+    "description": "Fallback text for an image that has neither alt text nor a derivable file name."
+  },
+  "imageEmbedded": {
+    "message": "eingebettet",
+    "description": "Marks an image that was inlined as a data: URI instead of being linked."
+  },
+  "attachmentsHeading": {
+    "message": "Anhänge",
+    "description": "Heading of the attachment list appended below the mail body."
+  },
+  "attachmentInline": {
+    "message": "eingebettet",
+    "description": "Marks an attachment that is referenced from the body as an inline image."
   }
 }

@@ -70,22 +70,21 @@ self-built, unsigned `.xpi`, signature verification must be temporarily
 disabled — this only works on **Thunderbird ESR** or the **Developer
 Edition**, not on the normal release channel.
 
-1. **Fully quit Thunderbird** (the process must not still be running —
-   `prefs.js` is rewritten on exit and would otherwise overwrite any manual
-   change)
-2. Add the following line to the `prefs.js` of the active profile:
-   ```
-   user_pref("xpinstall.signatures.required", false);
-   ```
-   Profile path on macOS: `~/Library/Thunderbird/Profiles/<profile>.default/prefs.js`
-   (check the profile name first, e.g. via `find ~/Library/Thunderbird/Profiles -maxdepth 1 -type d`)
-3. Back up `prefs.js` before editing (`cp prefs.js prefs.js.bak`)
-4. Start Thunderbird → `Ctrl+Shift+A` → gear icon → "Install Add-on From
-   File…" → select the built `dist/mail-as-markdown.xpi`
-5. Check in `about:addons` that the expected version number is installed
-6. **After installation**: quit Thunderbird again and remove the line from
-   step 2, or set it back to `true`, to re-enable signature verification
-   (security-relevant — don't leave it disabled permanently)
+Set the pref in Thunderbird itself — do **not** edit `prefs.js` on disk.
+Thunderbird rewrites that file on exit and would overwrite a manual change.
+
+1. Settings → General → scroll to the bottom → "Config Editor…"
+   (the `about:config` page)
+2. Search for `xpinstall.signatures.required` and set it to `false`
+3. `Ctrl+Shift+A` → gear icon → "Install Add-on From File…" → select the built
+   `dist/mail-as-markdown.xpi`
+4. Check in `about:addons` that the expected version number is installed
+5. **After installation**: set `xpinstall.signatures.required` back to `true`
+   in the Config Editor (security-relevant — don't leave it disabled
+   permanently)
+
+This is a user action; an agent cannot click through the Config Editor. Ask
+the user to flip the pref rather than trying to patch the profile.
 
 ## Debugging
 

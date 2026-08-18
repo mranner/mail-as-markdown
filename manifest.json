@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "author": "Michael Ranner (azedo.at)",
@@ -13,11 +13,17 @@
   },
   "permissions": [
     "messagesRead",
+    "accountsRead",
     "clipboardWrite",
     "menus"
   ],
   "background": {
-    "scripts": ["turndown.js", "turndown-plugin-gfm.js", "html2md.js", "background.js"]
+    "scripts": [
+      "turndown.js",
+      "turndown-plugin-gfm.js",
+      "html2md.js",
+      "background.js"
+    ]
   },
   "icons": {
     "16": "icon-16.png",

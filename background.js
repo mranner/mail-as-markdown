@@ -14,18 +14,77 @@ function findBodyParts(part, result) {
   }
 }
 
+// Collects non-text MIME parts so inline images can be resolved by Content-ID
+// and real attachments can be listed. `headers` is not populated on every part
+// in every Thunderbird version, hence the defensive reads.
+function collectParts(part, out) {
+  if (!part) return out;
+  const contentId = ((part.headers && part.headers["content-id"]) || [])[0];
+  if (contentId && part.name) {
+    out.cidNames.set(contentId.trim().replace(/^<|>$/g, "").toLowerCase(), part.name);
+  }
+  if (contentId && part.partName) {
+    out.inlineParts.add(part.partName);
+  }
+  if (part.parts) {
+    for (const child of part.parts) {
+      collectParts(child, out);
+    }
+  }
+  return out;
+}
+
 function headerLine(label, value) {
   return value ? `**${label}:** ${value}\n` : "";
+}
+
+// "office@azedo.at — /INBOX/Projects" — enough for the imap skill to find the
+// message again. Messages opened from an .eml file have no folder.
+async function folderReference(message) {
+  const folder = message.folder;
+  if (!folder) return "";
+  let account = folder.accountId || "";
+  try {
+    const details = await messenger.accounts.get(folder.accountId, false);
+    if (details && details.name) account = details.name;
+  } catch (err) {
+    // "accountsRead" missing or account gone — fall back to the raw id.
+  }
+  return [account, folder.path].filter(Boolean).join(" — ");
+}
+
+// Attachments are never copied (the clipboard holds plain text) — the list only
+// records that they exist, so they can be fetched separately if needed.
+async function buildAttachmentList(messageId, inlineParts) {
+  let attachments = [];
+  try {
+    attachments = (await messenger.messages.listAttachments(messageId)) || [];
+  } catch (err) {
+    // Not every message supports attachment listing; absence is not an error.
+    return "";
+  }
+  if (attachments.length === 0) return "";
+
+  const inlineLabel = messenger.i18n.getMessage("attachmentInline");
+  const lines = attachments.map((attachment) => {
+    const details = [attachment.contentType, formatSize(attachment.size)].filter(Boolean).join(", ");
+    const suffix = inlineParts.has(attachment.partName) ? ` (${inlineLabel})` : "";
+    return `- \`${attachment.name}\`${details ? ` — ${details}` : ""}${suffix}`;
+  });
+
+  const heading = messenger.i18n.getMessage("attachmentsHeading");
+  return `\n---\n\n**${heading} (${attachments.length}):**\n\n${lines.join("\n")}\n`;
 }
 
 async function buildMarkdown(message) {
   const full = await messenger.messages.getFull(message.id);
   const result = { html: null, text: null };
   findBodyParts(full, result);
+  const parts = collectParts(full, { cidNames: new Map(), inlineParts: new Set() });
 
   let body;
   if (result.html) {
-    body = htmlToMarkdown(result.html);
+    body = htmlToMarkdown(result.html, { cidNames: parts.cidNames });
   } else if (result.text) {
     body = result.text.trim();
   } else {
@@ -39,9 +98,16 @@ async function buildMarkdown(message) {
     headerLine(
       messenger.i18n.getMessage("headerDate"),
       message.date ? new Date(message.date).toLocaleString(messenger.i18n.getUILanguage()) : ""
+    ) +
+    headerLine(messenger.i18n.getMessage("headerFolder"), await folderReference(message)) +
+    headerLine(
+      messenger.i18n.getMessage("headerMessageId"),
+      message.headerMessageId ? `<${message.headerMessageId}>` : ""
     );
 
-  return `${meta}\n${body}\n`;
+  const attachments = await buildAttachmentList(message.id, parts.inlineParts);
+
+  return `${meta}\n${body}\n${attachments}`;
 }
 
 // document.execCommand("copy") works more reliably in the (background) extension

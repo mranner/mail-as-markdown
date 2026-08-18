@@ -12,8 +12,22 @@ Code.
 A green checkmark on the icon badge confirms the copy, a red "!" indicates an
 error (e.g. no message selected).
 
-The result contains a short header (Subject/From/To/Date) followed by the
-mail body as Markdown.
+The result contains a short header followed by the mail body as Markdown:
+
+- **Header**: Subject, From, To, Date, plus a source reference (`Folder` with
+  account name and folder path, and the `Message-ID`) so the mail can be
+  looked up again later, e.g. over IMAP.
+- **Images**: kept as Markdown image syntax, but the alt text is enriched with
+  the file name — `![Image: Company logo — logo.png](cid:…)`. Inline images
+  resolve their name via Content-ID, remote ones via the URL. Data URIs are
+  reduced to a plain-text marker with content type and estimated size instead
+  of copying the whole base64 payload; tracking pixels and spacers are
+  dropped.
+- **Attachments**: listed below the body with name, content type, and size.
+  The files themselves are not copied — the clipboard only holds text.
+
+Reading the account name for the folder reference requires the `accountsRead`
+permission; without it the internal account id is shown instead.
 
 ## Localization
 
