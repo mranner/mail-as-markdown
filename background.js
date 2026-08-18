@@ -38,6 +38,19 @@ function headerLine(label, value) {
   return value ? `**${label}:** ${value}\n` : "";
 }
 
+// The delivering server identifies the IMAP account far better than the
+// user-chosen account label: "Delivered-To: mranner@mail.azedo.at" names both
+// mailbox and host. Falls back to the last hop of the topmost Received line.
+function deliveryTarget(full) {
+  const headers = (full && full.headers) || {};
+  const deliveredTo = (headers["delivered-to"] || [])[0];
+  if (deliveredTo && deliveredTo.trim()) return deliveredTo.trim();
+
+  const received = (headers["received"] || [])[0] || "";
+  const byHost = /\bby\s+([A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?)/i.exec(received);
+  return byHost ? byHost[1] : "";
+}
+
 // "office@azedo.at — /INBOX/Projects" — enough for the imap skill to find the
 // message again. Messages opened from an .eml file have no folder.
 async function folderReference(message) {
@@ -100,6 +113,7 @@ async function buildMarkdown(message) {
       message.date ? new Date(message.date).toLocaleString(messenger.i18n.getUILanguage()) : ""
     ) +
     headerLine(messenger.i18n.getMessage("headerFolder"), await folderReference(message)) +
+    headerLine(messenger.i18n.getMessage("headerDeliveredTo"), deliveryTarget(full)) +
     headerLine(
       messenger.i18n.getMessage("headerMessageId"),
       message.headerMessageId ? `<${message.headerMessageId}>` : ""

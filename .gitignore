@@ -5,5 +5,8 @@ dist/
 # Scratch files (mail drafts, one-off working files)
 .tmp/
 
+# Session handoff notes (working state, not project documentation)
+handoff.md
+
 # OS cruft
 .DS_Store

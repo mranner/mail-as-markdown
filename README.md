@@ -14,9 +14,11 @@ error (e.g. no message selected).
 
 The result contains a short header followed by the mail body as Markdown:
 
-- **Header**: Subject, From, To, Date, plus a source reference (`Folder` with
-  account name and folder path, and the `Message-ID`) so the mail can be
-  looked up again later, e.g. over IMAP.
+- **Header**: Subject, From, To, Date, plus a source reference so the mail can
+  be looked up again later, e.g. over IMAP: `Folder` (account name and folder
+  path), `Delivered to` (the delivering mailbox and host, taken from the
+  message's own headers — more reliable than the account label for telling
+  accounts apart), and the `Message-ID`.
 - **Images**: kept as Markdown image syntax, but the alt text is enriched with
   the file name — `![Image: Company logo — logo.png](cid:…)`. Inline images
   resolve their name via Content-ID, remote ones via the URL. Data URIs are

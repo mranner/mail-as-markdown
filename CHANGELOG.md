@@ -4,6 +4,18 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] - 2026-08-18
+
+### Added
+
+- The Markdown header gained a `Delivered to` line, read from the message's
+  own `Delivered-To` header (falling back to the last hop of the topmost
+  `Received` line). It names the delivering mailbox and host, e.g.
+  `user@mail.example.at`, which identifies the IMAP account far more reliably
+  than the user-chosen Thunderbird account label — two accounts can share both
+  the label style and the identity address, but not the delivering host. If
+  neither header is present, the line is omitted.
+
 ## [0.3.0] - 2026-08-18
 
 ### Added

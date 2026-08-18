@@ -62,5 +62,9 @@
   "attachmentInline": {
     "message": "inline",
     "description": "Marks an attachment that is referenced from the body as an inline image."
+  },
+  "headerDeliveredTo": {
+    "message": "Delivered to",
+    "description": "Label for the delivering mailbox/host in the generated Markdown header."
   }
 }
