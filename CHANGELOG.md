@@ -4,6 +4,18 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.1] - 2026-08-18
+
+### Fixed
+
+- HTML mails whose layout is built from nested tables (most newsletters) came
+  out as raw HTML instead of Markdown. The GFM plugin keeps every table without
+  a heading row verbatim, which buried the text in markup and also hid the
+  images from the image rule. Such layout tables are now unwrapped; real data
+  tables (with a `<th>`) still become Markdown tables.
+- `<style>` and `<script>` contents no longer leak into the output as text.
+  Turndown has no built-in rule for them, so their text was kept.
+
 ## [0.4.0] - 2026-08-18
 
 ### Added

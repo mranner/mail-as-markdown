@@ -93,6 +93,25 @@ function imageRule(cidNames) {
   };
 }
 
+// Newsletters build their layout from nested tables. The GFM plugin keeps every
+// table without a heading row as raw HTML (turndown-plugin-gfm.js:131 via
+// keepReplacement), which buries the actual text in markup and hides the images
+// from the rule above. Such tables get unwrapped instead; real data tables (with
+// a <th>) still go through the plugin and become Markdown tables.
+function isLayoutTable(table) {
+  return !!table && !table.querySelector("th");
+}
+
+// Mirrors Turndown's defaultRule, i.e. renders the element as if it had no rule.
+function unwrapRule(filter) {
+  return {
+    filter: filter,
+    replacement: function (content, node) {
+      return node.isBlock ? "\n\n" + content + "\n\n" : content;
+    },
+  };
+}
+
 // options.cidNames: Map of lower-cased Content-ID (without <>) to file name.
 function htmlToMarkdown(html, options = {}) {
   const turndownService = new TurndownService({
@@ -101,7 +120,20 @@ function htmlToMarkdown(html, options = {}) {
     bulletListMarker: "-",
   });
   turndownService.use(turndownPluginGfm.gfm);
-  // addRule() prepends, so this wins over Turndown's built-in image rule.
+  // Stylesheets and scripts carry no mail content, but Turndown would keep
+  // their text (there is no built-in rule for them).
+  turndownService.remove(["style", "script", "head", "meta", "link", "noscript", "title"]);
+  // addRule() prepends, so these win over Turndown's built-in and the GFM
+  // plugin's rules — and over the plugin's keep() for heading-less tables.
   turndownService.addRule("image", imageRule(options.cidNames));
+  turndownService.addRule("layoutTable", unwrapRule(function (node) {
+    return node.nodeName === "TABLE" && isLayoutTable(node);
+  }));
+  turndownService.addRule("layoutRow", unwrapRule(function (node) {
+    return node.nodeName === "TR" && isLayoutTable(node.closest("table"));
+  }));
+  turndownService.addRule("layoutCell", unwrapRule(function (node) {
+    return (node.nodeName === "TD" || node.nodeName === "TH") && isLayoutTable(node.closest("table"));
+  }));
   return turndownService.turndown(html).trim();
 }
