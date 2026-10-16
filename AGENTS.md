@@ -13,6 +13,8 @@ the `.xpi` package and helps with local installation.
 - `icon-16.png` / `icon-32.png` / `icon-48.png` / `icon-64.png` — toolbar/menu icon
 - `_locales/en/messages.json`, `_locales/de/messages.json` — UI translations (English default, German)
 - `LICENSE` — BSD-2-Clause for the own code
+- `docs/` — review notes, e.g. Thunderbird API reviews with items to take
+  along on the next change
 - `dist/` — build output, holds the packaged `.xpi` (git-ignored, created by
   the build)
 
